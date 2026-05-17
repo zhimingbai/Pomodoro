@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Language
+
+**所有回复、解释、注释说明必须使用中文。**
+
 ## Project
 
 Pomodoro timer desktop app — Electron + Vue 3 + TypeScript + Pinia. 420×620 fixed window, dark theme, Chinese UI.
