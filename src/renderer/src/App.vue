@@ -6,6 +6,7 @@ import { useHistoryStore } from './stores/history'
 import TimerDisplay from './components/TimerDisplay.vue'
 import TimerControls from './components/TimerControls.vue'
 import SessionIndicator from './components/SessionIndicator.vue'
+import ActiveTaskBanner from './components/ActiveTaskBanner.vue'
 import TaskList from './components/TaskList.vue'
 import StatsOverview from './components/StatsOverview.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
@@ -47,6 +48,7 @@ onMounted(async () => {
 
     <main class="main-content">
       <template v-if="activeTab === '计时'">
+        <ActiveTaskBanner />
         <TimerDisplay />
         <SessionIndicator />
         <TimerControls />
