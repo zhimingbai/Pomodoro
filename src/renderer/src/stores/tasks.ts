@@ -42,6 +42,11 @@ export const useTaskStore = defineStore('tasks', () => {
     await saveTasks()
   }
 
+  async function clearTasks(): Promise<void> {
+    tasks.value = []
+    await saveTasks()
+  }
+
   const activeTasks = computed(() =>
     tasks.value.filter((t) => !t.completed).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   )
@@ -60,6 +65,7 @@ export const useTaskStore = defineStore('tasks', () => {
     addTask,
     toggleTask,
     deleteTask,
+    clearTasks,
     activeTasks,
     completedTasks,
     taskCount
