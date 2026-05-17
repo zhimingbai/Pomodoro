@@ -26,9 +26,9 @@ export const useTimerStore = defineStore('timer', () => {
 
   const remainingSeconds = ref(phaseDurationSeconds.value)
 
-  // Keep remainingSeconds in sync when phase changes
-  watch(phase, () => {
-    if (status.value === 'idle') {
+  // Sync remainingSeconds when settings finish loading or phase changes
+  watch([() => settingsStore.loaded, phase], ([isLoaded]) => {
+    if (isLoaded && status.value === 'idle') {
       remainingSeconds.value = phaseDurationSeconds.value
     }
   })
