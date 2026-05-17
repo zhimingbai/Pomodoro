@@ -13,6 +13,7 @@ export const useSettingsStore = defineStore('settings', () => {
       if (data) {
         settings.value = { ...DEFAULT_SETTINGS, ...(data as AppSettings) }
         console.log('[settings] loaded via IPC:', JSON.stringify(settings.value))
+        loaded.value = true
         return
       }
     } catch (err) {

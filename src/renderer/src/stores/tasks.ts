@@ -12,6 +12,7 @@ export const useTaskStore = defineStore('tasks', () => {
       if (data) {
         tasks.value = data as Task[]
         console.log('[tasks] loaded via IPC:', tasks.value.length, 'tasks')
+        loaded.value = true
         return
       }
     } catch (err) {

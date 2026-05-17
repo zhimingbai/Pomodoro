@@ -12,6 +12,7 @@ export const useHistoryStore = defineStore('history', () => {
       if (data) {
         sessions.value = data as SessionRecord[]
         console.log('[history] loaded via IPC:', sessions.value.length, 'sessions')
+        loaded.value = true
         return
       }
     } catch (err) {
