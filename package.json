@@ -1,6 +1,7 @@
 {
   "name": "pomodoro",
   "version": "1.0.0",
+  "license": "MIT",
   "description": "Pomodoro Timer - Stay focused and productive",
   "main": "./out/main/index.js",
   "author": "example.com",
