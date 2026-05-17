@@ -25,6 +25,9 @@ function handleMainClick(): void {
       <button class="btn btn-secondary" @click="timer.resetTimer()" v-if="!timer.isIdle">
         重置
       </button>
+      <button class="btn btn-secondary" @click="timer.resetCycle()" v-if="!timer.isIdle">
+        重置循环
+      </button>
       <button class="btn btn-secondary" @click="timer.skipPhase()" v-if="timer.isRunning">
         跳过
       </button>

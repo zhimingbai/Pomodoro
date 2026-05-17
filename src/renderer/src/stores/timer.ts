@@ -102,6 +102,21 @@ export const useTimerStore = defineStore('timer', () => {
     remainingSeconds.value = phaseDurationSeconds.value
   }
 
+  function resetCycle(): void {
+    if (timerHandle) {
+      clearInterval(timerHandle)
+      timerHandle = null
+    }
+    phase.value = 'focus'
+    status.value = 'idle'
+    endTimestamp.value = null
+    pausedRemaining.value = null
+    sessionsCompletedInCycle.value = 0
+    activeTaskId.value = null
+    activeTaskText.value = null
+    remainingSeconds.value = phaseDurationSeconds.value
+  }
+
   function skipPhase(): void {
     if (timerHandle) {
       clearInterval(timerHandle)
@@ -191,6 +206,7 @@ export const useTimerStore = defineStore('timer', () => {
     startTimer,
     pauseTimer,
     resetTimer,
+    resetCycle,
     skipPhase,
     completeSession,
     advancePhase,
