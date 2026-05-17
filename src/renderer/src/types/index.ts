@@ -26,6 +26,7 @@ export interface AppSettings {
   longBreakInterval: number
   autoStartFocus: boolean
   autoStartBreak: boolean
+  autoCheckUpdate: boolean
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -34,5 +35,14 @@ export const DEFAULT_SETTINGS: AppSettings = {
   longBreakDuration: 15,
   longBreakInterval: 4,
   autoStartFocus: false,
-  autoStartBreak: false
+  autoStartBreak: false,
+  autoCheckUpdate: false
+}
+
+export interface UpdateInfo {
+  hasUpdate: boolean
+  currentVersion: string
+  latestVersion: string
+  releaseUrl: string
+  releaseNotes: string
 }

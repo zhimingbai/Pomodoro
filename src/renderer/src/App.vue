@@ -25,6 +25,13 @@ onMounted(async () => {
     taskStore.loadTasks(),
     historyStore.loadHistory()
   ])
+  if (settingsStore.settings.autoCheckUpdate) {
+    window.api.checkUpdate().then((info) => {
+      if (info.hasUpdate) {
+        console.log('[update] 发现新版本:', info.latestVersion, info.releaseUrl)
+      }
+    }).catch(() => {})
+  }
 })
 </script>
 

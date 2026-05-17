@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { useTimerStore } from '../stores/timer'
 import { useTaskStore } from '../stores/tasks'
 import { useHistoryStore } from '../stores/history'
-import type { AppSettings } from '../types'
+import type { AppSettings, UpdateInfo } from '../types'
 import ConfirmDialog from './ConfirmDialog.vue'
 
 const settings = useSettingsStore()
@@ -14,6 +14,28 @@ const historyStore = useHistoryStore()
 
 const showResetConfirm = ref(false)
 const showClearConfirm = ref(false)
+
+// 更新检测状态
+const updateInfo = ref<UpdateInfo>({ hasUpdate: false, currentVersion: '', latestVersion: '', releaseUrl: '', releaseNotes: '' })
+const updateStatus = ref<'idle' | 'checking' | 'checked'>('idle')
+
+async function checkUpdate(): Promise<void> {
+  updateStatus.value = 'checking'
+  try {
+    updateInfo.value = await window.api.checkUpdate()
+  } catch {
+    updateInfo.value = { hasUpdate: false, currentVersion: '', latestVersion: '', releaseUrl: '', releaseNotes: '' }
+  }
+  updateStatus.value = 'checked'
+}
+
+function openUpdateUrl(): void {
+  window.api.openExternal(updateInfo.value.releaseUrl || 'https://gitee.com/angelica-tea/pomodoro/releases')
+}
+
+onMounted(() => {
+  checkUpdate()
+})
 
 const locked = timer.isRunning || timer.isPaused
 
@@ -134,12 +156,57 @@ function clearAllData(): void {
       </div>
     </div>
 
-    <!-- About -->
+    <!-- Update -->
     <div class="settings-group">
-      <h3 class="group-title">关于</h3>
-      <div class="about-text">
-        <p>Pomodoro Timer v1.0</p>
-        <p class="about-sub">Electron + Vue 3 + TypeScript</p>
+      <h3 class="group-title">更新</h3>
+      <div class="update-section">
+        <div class="update-info">
+          <div class="update-row">
+            <span class="update-label">当前版本</span>
+            <span class="update-value">{{ updateInfo.currentVersion || '-' }}</span>
+          </div>
+          <div class="update-row" v-if="updateStatus === 'checked' && updateInfo.hasUpdate">
+            <span class="update-label">最新版本</span>
+            <span class="update-value latest">{{ updateInfo.latestVersion }}</span>
+          </div>
+        </div>
+
+        <!-- Check result -->
+        <div v-if="updateStatus === 'checked' && updateInfo.hasUpdate" class="update-result has-update">
+          <p class="update-result-title">发现新版本 v{{ updateInfo.latestVersion }}</p>
+          <p class="update-result-desc" v-if="updateInfo.releaseNotes">{{ updateInfo.releaseNotes }}</p>
+          <button class="btn-update" @click="openUpdateUrl">
+            前往下载
+          </button>
+        </div>
+        <div v-else-if="updateStatus === 'checked'" class="update-result up-to-date">
+          已是最新版本
+        </div>
+        <div v-else-if="updateStatus === 'checking'" class="update-result checking">
+          正在检查更新...
+        </div>
+
+        <div class="update-actions">
+          <button class="btn-action btn-check" :disabled="updateStatus === 'checking'" @click="checkUpdate">
+            {{ updateStatus === 'checking' ? '检查中...' : '检查更新' }}
+          </button>
+        </div>
+
+        <!-- Auto check toggle -->
+        <div class="field">
+          <div class="field-info">
+            <label>自动检测更新</label>
+            <span class="field-desc">启动时自动检查是否有新版本</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              :checked="settings.settings.autoCheckUpdate as boolean"
+              @change="settings.updateSetting('autoCheckUpdate', ($event.target as HTMLInputElement).checked)"
+            />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -360,16 +427,85 @@ function clearAllData(): void {
   background: rgba(255, 107, 107, 0.3);
 }
 
-/* ---- about ---- */
-.about-text {
-  text-align: center;
+/* ---- update ---- */
+.update-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.update-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.update-label {
   font-size: 12px;
-  opacity: 0.3;
+  opacity: 0.5;
 }
-.about-text p {
+.update-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.update-value.latest {
+  color: #51cf66;
+}
+.update-result {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: center;
+}
+.update-result.checking {
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.4);
+}
+.update-result.up-to-date {
+  background: rgba(81, 207, 102, 0.1);
+  color: #51cf66;
+}
+.update-result.has-update {
+  background: rgba(51, 154, 240, 0.1);
+  color: #339af0;
+}
+.update-result-title {
   margin: 0 0 4px;
+  font-weight: 600;
+  font-size: 13px;
 }
-.about-sub {
-  font-size: 11px !important;
+.update-result-desc {
+  margin: 0 0 8px;
+  font-size: 11px;
+  opacity: 0.6;
+  max-height: 60px;
+  overflow: hidden;
+}
+.btn-update {
+  padding: 5px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #339af0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-update:hover {
+  background: #4dabf7;
+}
+.update-actions {
+  display: flex;
+  justify-content: center;
+}
+.btn-check {
+  padding: 6px 24px;
+}
+.btn-check:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 </style>

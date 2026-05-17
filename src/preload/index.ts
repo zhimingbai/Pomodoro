@@ -5,7 +5,9 @@ const api = {
   readJSON: (filename: string) => ipcRenderer.invoke('read-json', filename),
   writeJSON: (filename: string, data: unknown) => ipcRenderer.invoke('write-json', filename, data),
   sendNotification: (title: string, body: string) =>
-    ipcRenderer.invoke('send-notification', title, body)
+    ipcRenderer.invoke('send-notification', title, body),
+  checkUpdate: () => ipcRenderer.invoke('check-update'),
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url)
 }
 
 if (process.contextIsolated) {
