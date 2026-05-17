@@ -7,15 +7,48 @@ export const useTaskStore = defineStore('tasks', () => {
   const loaded = ref(false)
 
   async function loadTasks(): Promise<void> {
-    const data = await window.api.readJSON('tasks.json')
-    if (data) {
-      tasks.value = data as Task[]
+    try {
+      const data = await window.api.readJSON('tasks.json')
+      if (data) {
+        tasks.value = data as Task[]
+        console.log('[tasks] loaded via IPC:', tasks.value.length, 'tasks')
+        return
+      }
+    } catch (err) {
+      console.error('[tasks] IPC load error:', err)
     }
-    loaded.value = true
+
+    // Fallback: localStorage
+    try {
+      const raw = localStorage.getItem('tasks')
+      if (raw) {
+        tasks.value = JSON.parse(raw)
+        console.log('[tasks] loaded via localStorage:', tasks.value.length, 'tasks')
+      }
+    } catch (err) {
+      console.error('[tasks] localStorage load error:', err)
+    } finally {
+      loaded.value = true
+    }
   }
 
   async function saveTasks(): Promise<void> {
-    await window.api.writeJSON('tasks.json', tasks.value)
+    // Always save to localStorage first (synchronous, reliable)
+    try {
+      const raw = JSON.stringify(tasks.value)
+      localStorage.setItem('tasks', raw)
+      console.log('[tasks] localStorage saved:', tasks.value.length, 'tasks')
+    } catch (err) {
+      console.error('[tasks] localStorage save error:', err)
+    }
+
+    // Then save to filesystem via IPC
+    try {
+      await window.api.writeJSON('tasks.json', JSON.parse(JSON.stringify(tasks.value)))
+      console.log('[tasks] IPC saved:', tasks.value.length, 'tasks')
+    } catch (err) {
+      console.error('[tasks] IPC save error:', err)
+    }
   }
 
   async function addTask(text: string): Promise<void> {

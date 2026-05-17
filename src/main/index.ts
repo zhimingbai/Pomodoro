@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, Notification } from 'electron'
 import { join } from 'path'
+import { writeFileSync, readFileSync, unlinkSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { readJSON, writeJSON } from './persistence'
@@ -43,6 +44,17 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  // Sanity check: verify persistence works on startup
+  try {
+    const testPath = join(app.getPath('userData'), '.write-test')
+    writeFileSync(testPath, 'ok', 'utf-8')
+    readFileSync(testPath, 'utf-8')
+    unlinkSync(testPath)
+    console.log('[persist] startup write/read test: OK')
+  } catch (err) {
+    console.error('[persist] startup write/read test FAILED:', err)
+  }
 
   // IPC: persistence
   ipcMain.handle('read-json', (_event, filename: string) => {

@@ -8,15 +8,47 @@ export const useSettingsStore = defineStore('settings', () => {
   const loaded = ref(false)
 
   async function loadSettings(): Promise<void> {
-    const data = await window.api.readJSON('settings.json')
-    if (data) {
-      settings.value = { ...DEFAULT_SETTINGS, ...(data as AppSettings) }
+    try {
+      const data = await window.api.readJSON('settings.json')
+      if (data) {
+        settings.value = { ...DEFAULT_SETTINGS, ...(data as AppSettings) }
+        console.log('[settings] loaded via IPC:', JSON.stringify(settings.value))
+        return
+      }
+    } catch (err) {
+      console.error('[settings] IPC load error:', err)
     }
-    loaded.value = true
+
+    // Fallback: localStorage
+    try {
+      const raw = localStorage.getItem('settings')
+      if (raw) {
+        settings.value = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
+        console.log('[settings] loaded via localStorage:', JSON.stringify(settings.value))
+      }
+    } catch (err) {
+      console.error('[settings] localStorage load error:', err)
+    } finally {
+      loaded.value = true
+    }
   }
 
   async function saveSettings(): Promise<void> {
-    await window.api.writeJSON('settings.json', settings.value)
+    // Always save to localStorage first
+    try {
+      localStorage.setItem('settings', JSON.stringify(settings.value))
+      console.log('[settings] localStorage saved')
+    } catch (err) {
+      console.error('[settings] localStorage save error:', err)
+    }
+
+    // Then save to filesystem via IPC
+    try {
+      await window.api.writeJSON('settings.json', JSON.parse(JSON.stringify(settings.value)))
+      console.log('[settings] IPC saved')
+    } catch (err) {
+      console.error('[settings] IPC save error:', err)
+    }
   }
 
   async function updateSetting<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {

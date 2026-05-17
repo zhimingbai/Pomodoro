@@ -7,15 +7,47 @@ export const useHistoryStore = defineStore('history', () => {
   const loaded = ref(false)
 
   async function loadHistory(): Promise<void> {
-    const data = await window.api.readJSON('history.json')
-    if (data) {
-      sessions.value = data as SessionRecord[]
+    try {
+      const data = await window.api.readJSON('history.json')
+      if (data) {
+        sessions.value = data as SessionRecord[]
+        console.log('[history] loaded via IPC:', sessions.value.length, 'sessions')
+        return
+      }
+    } catch (err) {
+      console.error('[history] IPC load error:', err)
     }
-    loaded.value = true
+
+    // Fallback: localStorage
+    try {
+      const raw = localStorage.getItem('history')
+      if (raw) {
+        sessions.value = JSON.parse(raw)
+        console.log('[history] loaded via localStorage:', sessions.value.length, 'sessions')
+      }
+    } catch (err) {
+      console.error('[history] localStorage load error:', err)
+    } finally {
+      loaded.value = true
+    }
   }
 
   async function saveHistory(): Promise<void> {
-    await window.api.writeJSON('history.json', sessions.value)
+    // Always save to localStorage first
+    try {
+      localStorage.setItem('history', JSON.stringify(sessions.value))
+      console.log('[history] localStorage saved:', sessions.value.length, 'sessions')
+    } catch (err) {
+      console.error('[history] localStorage save error:', err)
+    }
+
+    // Then save to filesystem via IPC
+    try {
+      await window.api.writeJSON('history.json', JSON.parse(JSON.stringify(sessions.value)))
+      console.log('[history] IPC saved:', sessions.value.length, 'sessions')
+    } catch (err) {
+      console.error('[history] IPC save error:', err)
+    }
   }
 
   async function addSession(session: SessionRecord): Promise<void> {
