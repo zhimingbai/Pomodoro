@@ -187,6 +187,15 @@ export const useTimerStore = defineStore('timer', () => {
 
     advancePhase()
     remainingSeconds.value = phaseDurationSeconds.value
+
+    // Auto-start next phase if configured
+    const s = settingsStore.settings
+    const shouldAutoStart =
+      (phase.value === 'focus' && s.autoStartFocus) ||
+      (phase.value !== 'focus' && s.autoStartBreak)
+    if (shouldAutoStart) {
+      startTimer()
+    }
   }
 
   function setActiveTask(taskId: string | null, taskText: string | null): void {

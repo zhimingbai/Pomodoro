@@ -24,11 +24,15 @@ export interface AppSettings {
   shortBreakDuration: number
   longBreakDuration: number
   longBreakInterval: number
+  autoStartFocus: boolean
+  autoStartBreak: boolean
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   focusDuration: 25,
   shortBreakDuration: 5,
   longBreakDuration: 15,
-  longBreakInterval: 4
+  longBreakInterval: 4,
+  autoStartFocus: false,
+  autoStartBreak: false
 }

@@ -24,6 +24,11 @@ const fields: { key: keyof AppSettings; label: string; desc: string; min: number
   { key: 'longBreakInterval', label: '长休间隔', desc: '完成几轮专注后进入长休', min: 1, max: 10, step: 1 }
 ]
 
+const toggles: { key: keyof AppSettings; label: string; desc: string }[] = [
+  { key: 'autoStartFocus', label: '休息后自动专注', desc: '休息阶段结束后自动开始下一次专注' },
+  { key: 'autoStartBreak', label: '专注后自动休息', desc: '专注阶段结束后自动进入休息' }
+]
+
 function handleChange(key: keyof AppSettings, raw: string): void {
   let val = parseInt(raw, 10)
   const field = fields.find((f) => f.key === key)!
@@ -74,6 +79,22 @@ function clearAllData(): void {
             />
             <span class="field-unit">分钟</span>
           </div>
+        </div>
+
+        <!-- Toggle switches -->
+        <div v-for="toggle in toggles" :key="toggle.key" class="field">
+          <div class="field-info">
+            <label>{{ toggle.label }}</label>
+            <span class="field-desc">{{ toggle.desc }}</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              :checked="settings.settings[toggle.key] as boolean"
+              @change="settings.updateSetting(toggle.key, ($event.target as HTMLInputElement).checked)"
+            />
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
 
@@ -222,6 +243,45 @@ function clearAllData(): void {
 .field-unit {
   font-size: 11px;
   opacity: 0.3;
+}
+
+/* ---- toggle switch ---- */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.2s;
+}
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: #339af0;
+}
+.toggle-switch input:checked + .toggle-slider::after {
+  transform: translateX(18px);
 }
 
 /* ---- cycle preview ---- */
