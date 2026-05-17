@@ -122,6 +122,11 @@ export const useTimerStore = defineStore('timer', () => {
       clearInterval(timerHandle)
       timerHandle = null
     }
+    // Clear active task when skipping a focus phase
+    if (phase.value === 'focus') {
+      activeTaskId.value = null
+      activeTaskText.value = null
+    }
     status.value = 'idle'
     endTimestamp.value = null
     pausedRemaining.value = null

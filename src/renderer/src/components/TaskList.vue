@@ -12,6 +12,11 @@ function handleAdd(text: string): void {
 }
 
 function handleToggle(id: string): void {
+  const task = taskStore.tasks.find((t) => t.id === id)
+  // If the task is being marked complete and was the active focus task, clear it
+  if (task && !task.completed && timer.activeTaskId === id) {
+    timer.setActiveTask(null, null)
+  }
   taskStore.toggleTask(id)
 }
 
