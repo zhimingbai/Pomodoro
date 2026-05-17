@@ -34,6 +34,9 @@ function createWindow(): void {
   }
 }
 
+// Ensure app name is set before userData path is resolved (may default to "Electron" in dev)
+app.setName('pomodoro')
+
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.pomodoro.app')
 

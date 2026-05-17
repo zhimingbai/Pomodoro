@@ -2,10 +2,13 @@ import { app } from 'electron'
 import { join } from 'path'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 
+let _dataDir: string | null = null
+
 function dataDir(): string {
-  const dir = join(app.getPath('userData'))
-  mkdirSync(dir, { recursive: true })
-  return dir
+  if (_dataDir) return _dataDir
+  _dataDir = join(app.getPath('userData'))
+  mkdirSync(_dataDir, { recursive: true })
+  return _dataDir
 }
 
 export function readJSON<T>(filename: string, fallback: T): T {
