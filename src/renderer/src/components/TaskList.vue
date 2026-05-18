@@ -40,7 +40,10 @@ function handleSetActive(id: string, text: string): void {
 
     <TaskForm @add="handleAdd" />
 
-    <div v-if="taskStore.activeTasks.length === 0 && taskStore.completedTasks.length === 0" class="empty-state">
+    <div
+      v-if="taskStore.activeTasks.length === 0 && taskStore.completedTasks.length === 0"
+      class="empty-state"
+    >
       <p>暂无任务，在上方添加一个吧。</p>
     </div>
 

@@ -7,7 +7,11 @@ const api = {
   sendNotification: (title: string, body: string) =>
     ipcRenderer.invoke('send-notification', title, body),
   checkUpdate: () => ipcRenderer.invoke('check-update'),
-  openExternal: (url: string) => ipcRenderer.invoke('open-external', url)
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+  onRequestClose: (callback: () => void) => {
+    ipcRenderer.on('request-close', callback)
+  },
+  confirmClose: () => ipcRenderer.invoke('confirm-close')
 }
 
 if (process.contextIsolated) {

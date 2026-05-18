@@ -16,6 +16,8 @@ function compareVersions(a: string, b: string): number {
   return 0
 }
 
+let forceClose = false
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 420,
@@ -27,6 +29,13 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
+    }
+  })
+
+  mainWindow.on('close', (e) => {
+    if (!forceClose) {
+      e.preventDefault()
+      mainWindow.webContents.send('request-close')
     }
   })
 
@@ -91,7 +100,7 @@ app.whenReady().then(() => {
         hostname: 'gitee.com',
         path: '/api/v5/repos/angelica-tea/pomodoro/releases?page=1&per_page=1',
         method: 'GET',
-        headers: { 'User-Agent': 'pomodoro-app', 'Accept': 'application/json' },
+        headers: { 'User-Agent': 'pomodoro-app', Accept: 'application/json' },
         timeout: 10000
       }
 
@@ -100,9 +109,20 @@ app.whenReady().then(() => {
         res.on('data', (chunk: string) => (body += chunk))
         res.on('end', () => {
           try {
-            const releases = JSON.parse(body) as Array<{ tag_name: string; name: string; body: string; html_url: string }>
+            const releases = JSON.parse(body) as Array<{
+              tag_name: string
+              name: string
+              body: string
+              html_url: string
+            }>
             if (!Array.isArray(releases) || releases.length === 0) {
-              resolve({ hasUpdate: false, currentVersion, latestVersion: '', releaseUrl: '', releaseNotes: '' })
+              resolve({
+                hasUpdate: false,
+                currentVersion,
+                latestVersion: '',
+                releaseUrl: '',
+                releaseNotes: ''
+              })
               return
             }
 
@@ -118,20 +138,45 @@ app.whenReady().then(() => {
               releaseNotes: latest.body || ''
             })
           } catch {
-            resolve({ hasUpdate: false, currentVersion, latestVersion: '', releaseUrl: '', releaseNotes: '' })
+            resolve({
+              hasUpdate: false,
+              currentVersion,
+              latestVersion: '',
+              releaseUrl: '',
+              releaseNotes: ''
+            })
           }
         })
       })
 
       req.on('error', () => {
-        resolve({ hasUpdate: false, currentVersion, latestVersion: '', releaseUrl: '', releaseNotes: '' })
+        resolve({
+          hasUpdate: false,
+          currentVersion,
+          latestVersion: '',
+          releaseUrl: '',
+          releaseNotes: ''
+        })
       })
       req.on('timeout', () => {
         req.destroy()
-        resolve({ hasUpdate: false, currentVersion, latestVersion: '', releaseUrl: '', releaseNotes: '' })
+        resolve({
+          hasUpdate: false,
+          currentVersion,
+          latestVersion: '',
+          releaseUrl: '',
+          releaseNotes: ''
+        })
       })
       req.end()
     })
+  })
+
+  // IPC: confirm window close
+  ipcMain.handle('confirm-close', () => {
+    forceClose = true
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) win.close()
   })
 
   // IPC: open external URL

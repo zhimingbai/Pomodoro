@@ -25,12 +25,7 @@ const dots = computed(() => {
 <template>
   <div class="session-indicator" v-if="timer.phase !== 'longBreak'">
     <div class="dots">
-      <span
-        v-for="(dot, i) in dots"
-        :key="i"
-        class="dot"
-        :class="dot"
-      ></span>
+      <span v-for="(dot, i) in dots" :key="i" class="dot" :class="dot"></span>
     </div>
     <div class="session-text">
       第 {{ timer.sessionsCompletedInCycle + 1 }} / {{ settings.settings.longBreakInterval }} 轮

@@ -52,7 +52,10 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  async function updateSetting<K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<void> {
+  async function updateSetting<K extends keyof AppSettings>(
+    key: K,
+    value: AppSettings[K]
+  ): Promise<void> {
     settings.value[key] = value
     await saveSettings()
   }
@@ -68,10 +71,14 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function getPhaseDurationSeconds(phase: string): number {
     switch (phase) {
-      case 'focus': return focusDurationMs.value
-      case 'shortBreak': return shortBreakDurationMs.value
-      case 'longBreak': return longBreakDurationMs.value
-      default: return focusDurationMs.value
+      case 'focus':
+        return focusDurationMs.value
+      case 'shortBreak':
+        return shortBreakDurationMs.value
+      case 'longBreak':
+        return longBreakDurationMs.value
+      default:
+        return focusDurationMs.value
     }
   }
 

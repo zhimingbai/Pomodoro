@@ -32,11 +32,7 @@ function handleDelete(): void {
 <template>
   <div class="task-item" :class="{ completed: task.completed, active: isActive }">
     <label class="task-left">
-      <input
-        type="checkbox"
-        :checked="task.completed"
-        @change="emit('toggle', task.id)"
-      />
+      <input type="checkbox" :checked="task.completed" @change="emit('toggle', task.id)" />
       <span class="task-text">{{ task.text }}</span>
     </label>
     <div class="task-actions">
@@ -48,16 +44,8 @@ function handleDelete(): void {
       >
         专注
       </button>
-      <button
-        v-if="isActive"
-        class="btn-focus active-hint"
-        title="当前专注任务"
-      >
-        进行中
-      </button>
-      <button class="btn-delete" title="双击删除" @click="handleDelete">
-        &times;
-      </button>
+      <button v-if="isActive" class="btn-focus active-hint" title="当前专注任务">进行中</button>
+      <button class="btn-delete" title="双击删除" @click="handleDelete">&times;</button>
     </div>
   </div>
 </template>
@@ -90,7 +78,7 @@ function handleDelete(): void {
   flex: 1;
   cursor: pointer;
 }
-.task-left input[type="checkbox"] {
+.task-left input[type='checkbox'] {
   accent-color: #51cf66;
   width: 16px;
   height: 16px;

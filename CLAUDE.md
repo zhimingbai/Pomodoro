@@ -25,6 +25,7 @@ npx electron-vite build
 ```
 
 `pnpm dev` fails due to pnpm v11 blocking Electron's postinstall script. Always use `npx electron-vite dev` directly. If the Electron binary is missing, run:
+
 ```bash
 node --use-system-ca node_modules/.pnpm/electron@*/node_modules/electron/install.js
 ```

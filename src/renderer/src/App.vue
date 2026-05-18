@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useSettingsStore } from './stores/settings'
 import { useTaskStore } from './stores/tasks'
 import { useHistoryStore } from './stores/history'
+import { useTimerStore } from './stores/timer'
 import TimerDisplay from './components/TimerDisplay.vue'
 import TimerControls from './components/TimerControls.vue'
 import SessionIndicator from './components/SessionIndicator.vue'
@@ -10,6 +11,7 @@ import ActiveTaskBanner from './components/ActiveTaskBanner.vue'
 import TaskList from './components/TaskList.vue'
 import StatsOverview from './components/StatsOverview.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
+import ConfirmDialog from './components/ConfirmDialog.vue'
 
 const tabs = ['计时', '任务', '统计', '设置'] as const
 type Tab = (typeof tabs)[number]
@@ -18,19 +20,39 @@ const activeTab = ref<Tab>('计时')
 const settingsStore = useSettingsStore()
 const taskStore = useTaskStore()
 const historyStore = useHistoryStore()
+const timer = useTimerStore()
+
+const showCloseConfirm = ref(false)
+
+function handleCloseRequest(): void {
+  if (timer.isRunning || timer.isPaused) {
+    showCloseConfirm.value = true
+  } else {
+    window.api.confirmClose()
+  }
+}
+
+function confirmClose(): void {
+  window.api.confirmClose()
+}
 
 onMounted(async () => {
+  window.api.onRequestClose(handleCloseRequest)
+
   await Promise.all([
     settingsStore.loadSettings(),
     taskStore.loadTasks(),
     historyStore.loadHistory()
   ])
   if (settingsStore.settings.autoCheckUpdate) {
-    window.api.checkUpdate().then((info) => {
-      if (info.hasUpdate) {
-        console.log('[update] 发现新版本:', info.latestVersion, info.releaseUrl)
-      }
-    }).catch(() => {})
+    window.api
+      .checkUpdate()
+      .then((info) => {
+        if (info.hasUpdate) {
+          console.log('[update] 发现新版本:', info.latestVersion, info.releaseUrl)
+        }
+      })
+      .catch(() => {})
   }
 })
 </script>
@@ -70,6 +92,15 @@ onMounted(async () => {
         <SettingsPanel />
       </template>
     </main>
+
+    <ConfirmDialog
+      v-if="showCloseConfirm"
+      title="确定要退出吗？"
+      message="计时器正在运行中，退出将丢失当前进度。"
+      confirm-text="退出"
+      @confirm="confirmClose"
+      @cancel="showCloseConfirm = false"
+    />
   </div>
 </template>
 

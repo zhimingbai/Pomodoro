@@ -49,7 +49,9 @@ function handleMainClick(): void {
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
 }
 .btn:active {
   transform: scale(0.97);

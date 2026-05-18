@@ -9,7 +9,7 @@ const timer = useTimerStore()
     <div class="phase-label">{{ timer.isPaused ? '已暂停' : timer.phaseLabel }}</div>
     <div class="time">{{ timer.displayTime }}</div>
     <div class="progress-bar">
-      <div class="progress-fill" :style="{ width: (timer.progress * 100) + '%' }"></div>
+      <div class="progress-fill" :style="{ width: timer.progress * 100 + '%' }"></div>
     </div>
   </div>
 </template>
@@ -49,10 +49,22 @@ const timer = useTimerStore()
   border-radius: 2px;
   transition: width 0.3s linear;
 }
-.focus { color: #ff6b6b; }
-.focus .progress-fill { background: #ff6b6b; }
-.shortBreak { color: #51cf66; }
-.shortBreak .progress-fill { background: #51cf66; }
-.longBreak { color: #339af0; }
-.longBreak .progress-fill { background: #339af0; }
+.focus {
+  color: #ff6b6b;
+}
+.focus .progress-fill {
+  background: #ff6b6b;
+}
+.shortBreak {
+  color: #51cf66;
+}
+.shortBreak .progress-fill {
+  background: #51cf66;
+}
+.longBreak {
+  color: #339af0;
+}
+.longBreak .progress-fill {
+  background: #339af0;
+}
 </style>

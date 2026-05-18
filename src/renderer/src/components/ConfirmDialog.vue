@@ -71,20 +71,28 @@ const emit = defineEmits<{
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.btn:active { opacity: 0.7; }
+.btn:active {
+  opacity: 0.7;
+}
 .btn-cancel {
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.7);
 }
-.btn-cancel:hover { background: rgba(255, 255, 255, 0.14); }
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
 .btn-confirm {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
-.btn-confirm:hover { background: rgba(255, 255, 255, 0.25); }
+.btn-confirm:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
 .btn-confirm.danger {
   background: rgba(255, 107, 107, 0.4);
   color: #fff;
 }
-.btn-confirm.danger:hover { background: rgba(255, 107, 107, 0.55); }
+.btn-confirm.danger:hover {
+  background: rgba(255, 107, 107, 0.55);
+}
 </style>
