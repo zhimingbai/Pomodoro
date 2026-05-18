@@ -98,7 +98,7 @@ app.whenReady().then(() => {
       const currentVersion = app.getVersion()
       const options = {
         hostname: 'gitee.com',
-        path: '/api/v5/repos/angelica-tea/pomodoro/releases?page=1&per_page=1',
+        path: '/api/v5/repos/angelica-tea/pomodoro/releases?page=1&per_page=1&direction=desc',
         method: 'GET',
         headers: { 'User-Agent': 'pomodoro-app', Accept: 'application/json' },
         timeout: 10000
@@ -115,7 +115,9 @@ app.whenReady().then(() => {
               body: string
               html_url: string
             }>
+            console.log('[update] release count:', releases.length)
             if (!Array.isArray(releases) || releases.length === 0) {
+              console.log('[update] no releases found')
               resolve({
                 hasUpdate: false,
                 currentVersion,
@@ -127,8 +129,11 @@ app.whenReady().then(() => {
             }
 
             const latest = releases[0]
+            console.log('[update] latest tag_name:', latest.tag_name, '| name:', latest.name)
             const latestVersion = (latest.tag_name || '').replace(/^v/i, '')
+            console.log('[update] current:', currentVersion, '| latest:', latestVersion)
             const hasUpdate = compareVersions(latestVersion, currentVersion) > 0
+            console.log('[update] hasUpdate:', hasUpdate, '(cmp result:', compareVersions(latestVersion, currentVersion), ')')
 
             resolve({
               hasUpdate,
@@ -137,7 +142,8 @@ app.whenReady().then(() => {
               releaseUrl: latest.html_url || `https://gitee.com/angelica-tea/pomodoro/releases`,
               releaseNotes: latest.body || ''
             })
-          } catch {
+          } catch (err) {
+            console.error('[update] JSON parse error:', err)
             resolve({
               hasUpdate: false,
               currentVersion,
@@ -149,7 +155,8 @@ app.whenReady().then(() => {
         })
       })
 
-      req.on('error', () => {
+      req.on('error', (err) => {
+        console.error('[update] network error:', err.message)
         resolve({
           hasUpdate: false,
           currentVersion,
@@ -159,6 +166,7 @@ app.whenReady().then(() => {
         })
       })
       req.on('timeout', () => {
+        console.error('[update] request timeout (10s)')
         req.destroy()
         resolve({
           hasUpdate: false,
