@@ -15,6 +15,7 @@ export const useTimerStore = defineStore('timer', () => {
   const activeTaskText = ref<string | null>(null)
 
   let timerHandle: ReturnType<typeof setInterval> | null = null
+  let sessionStartTimestamp: number | null = null
 
   const settingsStore = useSettingsStore()
 
@@ -33,6 +34,13 @@ export const useTimerStore = defineStore('timer', () => {
     }
   })
 
+  // Sync remainingSeconds when duration changes while idle
+  watch([phaseDurationSeconds, status], ([duration, currentStatus]) => {
+    if (currentStatus === 'idle') {
+      remainingSeconds.value = duration
+    }
+  })
+
   const isRunning = computed(() => status.value === 'running')
   const isPaused = computed(() => status.value === 'paused')
   const isIdle = computed(() => status.value === 'idle')
@@ -45,9 +53,12 @@ export const useTimerStore = defineStore('timer', () => {
 
   const phaseLabel = computed(() => {
     switch (phase.value) {
-      case 'focus': return '专注时间'
-      case 'shortBreak': return '短休'
-      case 'longBreak': return '长休'
+      case 'focus':
+        return '专注时间'
+      case 'shortBreak':
+        return '短休'
+      case 'longBreak':
+        return '长休'
     }
   })
 
@@ -69,6 +80,7 @@ export const useTimerStore = defineStore('timer', () => {
     if (status.value === 'idle') {
       remainingSeconds.value = phaseDurationSeconds.value
       endTimestamp.value = Date.now() + remainingSeconds.value * 1000
+      sessionStartTimestamp = Date.now()
     } else if (status.value === 'paused' && pausedRemaining.value !== null) {
       remainingSeconds.value = pausedRemaining.value
       endTimestamp.value = Date.now() + pausedRemaining.value * 1000
@@ -164,7 +176,7 @@ export const useTimerStore = defineStore('timer', () => {
       id: crypto.randomUUID(),
       date: now.toISOString().split('T')[0],
       phase: phase.value,
-      startTime: new Date(now.getTime() - phaseDurationSeconds.value * 1000).toISOString(),
+      startTime: new Date(sessionStartTimestamp ?? now.getTime()).toISOString(),
       endTime: now.toISOString(),
       durationSeconds: phaseDurationSeconds.value,
       taskId: activeTaskId.value,
@@ -191,8 +203,7 @@ export const useTimerStore = defineStore('timer', () => {
     // Auto-start next phase if configured
     const s = settingsStore.settings
     const shouldAutoStart =
-      (phase.value === 'focus' && s.autoStartFocus) ||
-      (phase.value !== 'focus' && s.autoStartBreak)
+      (phase.value === 'focus' && s.autoStartFocus) || (phase.value !== 'focus' && s.autoStartBreak)
     if (shouldAutoStart) {
       startTimer()
     }

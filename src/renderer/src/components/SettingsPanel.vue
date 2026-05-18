@@ -16,7 +16,13 @@ const showResetConfirm = ref(false)
 const showClearConfirm = ref(false)
 
 // 更新检测状态
-const updateInfo = ref<UpdateInfo>({ hasUpdate: false, currentVersion: '', latestVersion: '', releaseUrl: '', releaseNotes: '' })
+const updateInfo = ref<UpdateInfo>({
+  hasUpdate: false,
+  currentVersion: '',
+  latestVersion: '',
+  releaseUrl: '',
+  releaseNotes: ''
+})
 const updateStatus = ref<'idle' | 'checking' | 'checked'>('idle')
 
 async function checkUpdate(): Promise<void> {
@@ -24,13 +30,21 @@ async function checkUpdate(): Promise<void> {
   try {
     updateInfo.value = await window.api.checkUpdate()
   } catch {
-    updateInfo.value = { hasUpdate: false, currentVersion: '', latestVersion: '', releaseUrl: '', releaseNotes: '' }
+    updateInfo.value = {
+      hasUpdate: false,
+      currentVersion: '',
+      latestVersion: '',
+      releaseUrl: '',
+      releaseNotes: ''
+    }
   }
   updateStatus.value = 'checked'
 }
 
 function openUpdateUrl(): void {
-  window.api.openExternal(updateInfo.value.releaseUrl || 'https://gitee.com/angelica-tea/pomodoro/releases')
+  window.api.openExternal(
+    updateInfo.value.releaseUrl || 'https://gitee.com/angelica-tea/pomodoro/releases'
+  )
 }
 
 onMounted(() => {
@@ -39,11 +53,46 @@ onMounted(() => {
 
 const locked = timer.isRunning || timer.isPaused
 
-const fields: { key: keyof AppSettings; label: string; desc: string; min: number; max: number; step: number }[] = [
-  { key: 'focusDuration', label: '专注时长', desc: '每次专注阶段的分钟数', min: 1, max: 120, step: 5 },
-  { key: 'shortBreakDuration', label: '短休时长', desc: '短休息阶段的分钟数', min: 1, max: 30, step: 1 },
-  { key: 'longBreakDuration', label: '长休时长', desc: '长休息阶段的分钟数', min: 1, max: 60, step: 5 },
-  { key: 'longBreakInterval', label: '长休间隔', desc: '完成几轮专注后进入长休', min: 1, max: 10, step: 1 }
+const fields: {
+  key: keyof AppSettings
+  label: string
+  desc: string
+  min: number
+  max: number
+  step: number
+}[] = [
+  {
+    key: 'focusDuration',
+    label: '专注时长',
+    desc: '每次专注阶段的分钟数',
+    min: 1,
+    max: 120,
+    step: 5
+  },
+  {
+    key: 'shortBreakDuration',
+    label: '短休时长',
+    desc: '短休息阶段的分钟数',
+    min: 1,
+    max: 30,
+    step: 1
+  },
+  {
+    key: 'longBreakDuration',
+    label: '长休时长',
+    desc: '长休息阶段的分钟数',
+    min: 1,
+    max: 60,
+    step: 5
+  },
+  {
+    key: 'longBreakInterval',
+    label: '长休间隔',
+    desc: '完成几轮专注后进入长休',
+    min: 1,
+    max: 10,
+    step: 1
+  }
 ]
 
 const toggles: { key: keyof AppSettings; label: string; desc: string }[] = [
@@ -75,9 +124,7 @@ function clearAllData(): void {
 <template>
   <div class="settings-panel">
     <!-- Lock warning -->
-    <div v-if="locked" class="warning">
-      请先停止计时再修改设置
-    </div>
+    <div v-if="locked" class="warning">请先停止计时再修改设置</div>
 
     <!-- Timer settings group -->
     <div class="settings-group">
@@ -113,7 +160,9 @@ function clearAllData(): void {
             <input
               type="checkbox"
               :checked="settings.settings[toggle.key] as boolean"
-              @change="settings.updateSetting(toggle.key, ($event.target as HTMLInputElement).checked)"
+              @change="
+                settings.updateSetting(toggle.key, ($event.target as HTMLInputElement).checked)
+              "
             />
             <span class="toggle-slider"></span>
           </label>
@@ -124,7 +173,9 @@ function clearAllData(): void {
       <div class="cycle-preview">
         <span class="cycle-badge focus">专注 {{ settings.settings.focusDuration }}min</span>
         <span class="cycle-arrow">&rarr;</span>
-        <span class="cycle-badge shortBreak">短休 {{ settings.settings.shortBreakDuration }}min</span>
+        <span class="cycle-badge shortBreak"
+          >短休 {{ settings.settings.shortBreakDuration }}min</span
+        >
         <span class="cycle-repeat">&times; {{ settings.settings.longBreakInterval }}</span>
         <span class="cycle-arrow">&rarr;</span>
         <span class="cycle-badge longBreak">长休 {{ settings.settings.longBreakDuration }}min</span>
@@ -149,9 +200,7 @@ function clearAllData(): void {
             <span class="data-label">清除所有数据</span>
             <span class="data-desc">删除全部任务、历史记录，不可恢复</span>
           </div>
-          <button class="btn-action danger" @click="showClearConfirm = true">
-            清除
-          </button>
+          <button class="btn-action danger" @click="showClearConfirm = true">清除</button>
         </div>
       </div>
     </div>
@@ -172,12 +221,15 @@ function clearAllData(): void {
         </div>
 
         <!-- Check result -->
-        <div v-if="updateStatus === 'checked' && updateInfo.hasUpdate" class="update-result has-update">
+        <div
+          v-if="updateStatus === 'checked' && updateInfo.hasUpdate"
+          class="update-result has-update"
+        >
           <p class="update-result-title">发现新版本 v{{ updateInfo.latestVersion }}</p>
-          <p class="update-result-desc" v-if="updateInfo.releaseNotes">{{ updateInfo.releaseNotes }}</p>
-          <button class="btn-update" @click="openUpdateUrl">
-            前往下载
-          </button>
+          <p class="update-result-desc" v-if="updateInfo.releaseNotes">
+            {{ updateInfo.releaseNotes }}
+          </p>
+          <button class="btn-update" @click="openUpdateUrl">前往下载</button>
         </div>
         <div v-else-if="updateStatus === 'checked'" class="update-result up-to-date">
           已是最新版本
@@ -187,7 +239,11 @@ function clearAllData(): void {
         </div>
 
         <div class="update-actions">
-          <button class="btn-action btn-check" :disabled="updateStatus === 'checking'" @click="checkUpdate">
+          <button
+            class="btn-action btn-check"
+            :disabled="updateStatus === 'checking'"
+            @click="checkUpdate"
+          >
             {{ updateStatus === 'checking' ? '检查中...' : '检查更新' }}
           </button>
         </div>
@@ -202,7 +258,12 @@ function clearAllData(): void {
             <input
               type="checkbox"
               :checked="settings.settings.autoCheckUpdate as boolean"
-              @change="settings.updateSetting('autoCheckUpdate', ($event.target as HTMLInputElement).checked)"
+              @change="
+                settings.updateSetting(
+                  'autoCheckUpdate',
+                  ($event.target as HTMLInputElement).checked
+                )
+              "
             />
             <span class="toggle-slider"></span>
           </label>
@@ -366,11 +427,24 @@ function clearAllData(): void {
   border-radius: 4px;
   font-weight: 600;
 }
-.cycle-badge.focus { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; }
-.cycle-badge.shortBreak { background: rgba(81, 207, 102, 0.15); color: #51cf66; }
-.cycle-badge.longBreak { background: rgba(51, 154, 240, 0.15); color: #339af0; }
-.cycle-arrow { opacity: 0.3; }
-.cycle-repeat { opacity: 0.4; }
+.cycle-badge.focus {
+  background: rgba(255, 107, 107, 0.15);
+  color: #ff6b6b;
+}
+.cycle-badge.shortBreak {
+  background: rgba(81, 207, 102, 0.15);
+  color: #51cf66;
+}
+.cycle-badge.longBreak {
+  background: rgba(51, 154, 240, 0.15);
+  color: #339af0;
+}
+.cycle-arrow {
+  opacity: 0.3;
+}
+.cycle-repeat {
+  opacity: 0.4;
+}
 
 /* ---- data actions ---- */
 .data-actions {

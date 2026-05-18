@@ -247,8 +247,9 @@ const focusRatio = computed(() => {
   margin-top: 2px;
 }
 .stat-sub {
-  font-size: 10px;
-  opacity: 0.3;
+  font-size: 12px;
+  opacity: 0.75;
+  color: rgba(255, 255, 255, 0.78);
   margin-top: 2px;
 }
 .stat-card.accent-focus .stat-number {
