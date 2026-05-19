@@ -186,7 +186,13 @@ app.whenReady().then(() => {
             const latestVersion = (latest.tag_name || '').replace(/^v/i, '')
             console.log('[update] current:', currentVersion, '| latest:', latestVersion)
             const hasUpdate = compareVersions(latestVersion, currentVersion) > 0
-            console.log('[update] hasUpdate:', hasUpdate, '(cmp result:', compareVersions(latestVersion, currentVersion), ')')
+            console.log(
+              '[update] hasUpdate:',
+              hasUpdate,
+              '(cmp result:',
+              compareVersions(latestVersion, currentVersion),
+              ')'
+            )
 
             resolve({
               hasUpdate,

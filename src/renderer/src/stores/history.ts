@@ -2,10 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { SessionRecord } from '../types'
 import {
- 
- 
- 
-
   getDaysAgoLocalDateKey,
   getStartOfWeekLocalDateKey,
   getTodayLocalDateKey

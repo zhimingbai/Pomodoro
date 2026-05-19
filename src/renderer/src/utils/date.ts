@@ -22,4 +22,3 @@ export function getStartOfWeekLocalDateKey(date = new Date()): string {
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
   return formatLocalDateKey(startOfWeek)
 }
-
