@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { useTimerStore } from '../stores/timer'
 import { useTaskStore } from '../stores/tasks'
@@ -46,10 +46,6 @@ function openUpdateUrl(): void {
     updateInfo.value.releaseUrl || 'https://gitee.com/angelica-tea/pomodoro/releases'
   )
 }
-
-onMounted(() => {
-  checkUpdate()
-})
 
 const locked = timer.isRunning || timer.isPaused
 
