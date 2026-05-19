@@ -134,7 +134,14 @@ app.whenReady().then(() => {
   // IPC: notification
   ipcMain.handle('send-notification', (_event, title: string, body: string) => {
     if (Notification.isSupported()) {
-      new Notification({ title, body }).show()
+      const notification = new Notification({ title, body })
+      notification.on('click', () => {
+        if (mainWindow) {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      })
+      notification.show()
     }
   })
 
