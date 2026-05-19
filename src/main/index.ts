@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Notification } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Notification, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { writeFileSync, readFileSync, unlinkSync } from 'fs'
 import https from 'https'
@@ -17,14 +17,52 @@ function compareVersions(a: string, b: string): number {
 }
 
 let forceClose = false
+let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+
+function createTray(): void {
+  const trayIcon = nativeImage.createFromPath(icon).resize({ width: 16, height: 16 })
+  tray = new Tray(trayIcon)
+  tray.setToolTip('Pomodoro')
+
+  tray.on('click', () => {
+    if (mainWindow) {
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  })
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示窗口',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      }
+    },
+    { type: 'separator' },
+    {
+      label: '退出应用',
+      click: () => {
+        forceClose = true
+        if (mainWindow) mainWindow.close()
+      }
+    }
+  ])
+
+  tray.setContextMenu(contextMenu)
+}
 
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 420,
     height: 620,
     show: false,
     autoHideMenuBar: true,
     resizable: false,
+    backgroundColor: '#1a1a2e',
     icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -35,12 +73,20 @@ function createWindow(): void {
   mainWindow.on('close', (e) => {
     if (!forceClose) {
       e.preventDefault()
-      mainWindow.webContents.send('request-close')
+      mainWindow!.webContents.send('request-close')
     }
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow!.show()
+  })
+
+  mainWindow.on('minimize', () => {
+    setTimeout(() => {
+      if (mainWindow) {
+        mainWindow.hide()
+      }
+    }, 0)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -192,11 +238,24 @@ app.whenReady().then(() => {
     return shell.openExternal(url)
   })
 
+  // IPC: minimize window → hide to tray
+  ipcMain.handle('minimize-window', () => {
+    if (mainWindow) mainWindow.hide()
+  })
+
   createWindow()
+  createTray()
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+})
+
+app.on('before-quit', () => {
+  if (tray) {
+    tray.destroy()
+    tray = null
+  }
 })
 
 app.on('window-all-closed', () => {

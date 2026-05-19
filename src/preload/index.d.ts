@@ -9,6 +9,7 @@ declare global {
       sendNotification: (title: string, body: string) => Promise<void>
       checkUpdate: () => Promise<import('../renderer/src/types').UpdateInfo>
       openExternal: (url: string) => Promise<void>
+      minimizeWindow: () => Promise<void>
       onRequestClose: (callback: () => void) => void
       confirmClose: () => Promise<void>
     }

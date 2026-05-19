@@ -22,6 +22,7 @@ builder-debug.yml
 
 # Claude
 .claude/settings.local.json
+.claude/*
 
 # Env
 .env
