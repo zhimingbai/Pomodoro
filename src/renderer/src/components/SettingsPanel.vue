@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { useTimerStore } from '../stores/timer'
 import { useTaskStore } from '../stores/tasks'
@@ -47,7 +47,7 @@ function openUpdateUrl(): void {
   )
 }
 
-const locked = timer.isRunning || timer.isPaused
+const locked = computed(() => timer.isRunning || timer.isPaused)
 
 const fields: {
   key: keyof AppSettings
@@ -156,6 +156,7 @@ function clearAllData(): void {
             <input
               type="checkbox"
               :checked="settings.settings[toggle.key] as boolean"
+              :disabled="locked"
               @change="
                 settings.updateSetting(toggle.key, ($event.target as HTMLInputElement).checked)
               "
@@ -196,7 +197,9 @@ function clearAllData(): void {
             <span class="data-label">清除所有数据</span>
             <span class="data-desc">删除全部任务、历史记录，不可恢复</span>
           </div>
-          <button class="btn-action danger" @click="showClearConfirm = true">清除</button>
+          <button class="btn-action danger" :disabled="locked" @click="showClearConfirm = true">
+            清除
+          </button>
         </div>
       </div>
     </div>
@@ -210,7 +213,7 @@ function clearAllData(): void {
             <span class="update-label">当前版本</span>
             <span class="update-value">{{ updateInfo.currentVersion || '-' }}</span>
           </div>
-          <div class="update-row" v-if="updateStatus === 'checked' && updateInfo.hasUpdate">
+          <div v-if="updateStatus === 'checked' && updateInfo.hasUpdate" class="update-row">
             <span class="update-label">最新版本</span>
             <span class="update-value latest">{{ updateInfo.latestVersion }}</span>
           </div>
@@ -222,7 +225,7 @@ function clearAllData(): void {
           class="update-result has-update"
         >
           <p class="update-result-title">发现新版本 v{{ updateInfo.latestVersion }}</p>
-          <p class="update-result-desc" v-if="updateInfo.releaseNotes">
+          <p v-if="updateInfo.releaseNotes" class="update-result-desc">
             {{ updateInfo.releaseNotes }}
           </p>
           <button class="btn-update" @click="openUpdateUrl">前往下载</button>

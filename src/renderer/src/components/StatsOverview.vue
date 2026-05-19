@@ -2,19 +2,18 @@
 import { computed } from 'vue'
 import { useHistoryStore } from '../stores/history'
 import { useTaskStore } from '../stores/tasks'
+import { getDaysAgoLocalDateKey, getTodayLocalDateKey } from '../utils/date'
 
 const history = useHistoryStore()
 const taskStore = useTaskStore()
 
 // ---- helper ----
 function daysAgo(n: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - n)
-  return d.toISOString().split('T')[0]
+  return getDaysAgoLocalDateKey(n)
 }
 
 // ---- derived stats ----
-const today = computed(() => daysAgo(0))
+const today = computed(() => getTodayLocalDateKey())
 
 const todayFocusSessions = computed(() =>
   history.sessions.filter((s) => s.date === today.value && s.phase === 'focus')

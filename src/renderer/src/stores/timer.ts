@@ -4,6 +4,7 @@ import type { TimerPhase, TimerStatus } from '../types'
 import { useSettingsStore } from './settings'
 import { useHistoryStore } from './history'
 import { formatTime } from '../utils/format'
+import { formatLocalDateKey } from '../utils/date'
 
 export const useTimerStore = defineStore('timer', () => {
   const phase = ref<TimerPhase>('focus')
@@ -174,7 +175,7 @@ export const useTimerStore = defineStore('timer', () => {
     const historyStore = useHistoryStore()
     historyStore.addSession({
       id: crypto.randomUUID(),
-      date: now.toISOString().split('T')[0],
+      date: formatLocalDateKey(now),
       phase: phase.value,
       startTime: new Date(sessionStartTimestamp ?? now.getTime()).toISOString(),
       endTime: now.toISOString(),
