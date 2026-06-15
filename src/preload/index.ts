@@ -11,7 +11,11 @@ const api = {
   onRequestClose: (callback: () => void) => {
     ipcRenderer.on('request-close', callback)
   },
+  offRequestClose: (callback: () => void) => {
+    ipcRenderer.removeListener('request-close', callback)
+  },
   confirmClose: () => ipcRenderer.invoke('confirm-close'),
+  minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   exportData: () => ipcRenderer.invoke('export-data'),
   importData: (data: { settings: unknown; tasks: unknown; history: unknown }) =>
     ipcRenderer.invoke('import-data', data),

@@ -11,6 +11,7 @@ declare global {
       openExternal: (url: string) => Promise<void>
       minimizeWindow: () => Promise<void>
       onRequestClose: (callback: () => void) => void
+      offRequestClose: (callback: () => void) => void
       confirmClose: () => Promise<void>
       exportData: () => Promise<{ settings: unknown; tasks: unknown; history: unknown }>
       importData: (data: {

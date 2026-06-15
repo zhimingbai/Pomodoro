@@ -34,7 +34,7 @@ node --use-system-ca node_modules/.pnpm/electron@*/node_modules/electron/install
 
 **Three-target build** (electron-vite): `src/main/` → `out/main/`, `src/preload/` → `out/preload/`, `src/renderer/` → `out/renderer/`. The renderer uses Vite with `@vitejs/plugin-vue` and an `@renderer` alias pointing to `src/renderer/src`.
 
-**IPC**: Renderer calls `window.api.*` (exposed via `src/preload/index.ts` contextBridge). Main process handles in `src/main/index.ts`. Three channels: `read-json`, `write-json`, `send-notification`. Never add new IPC channels without updating all three files (main, preload, preload types).
+**IPC**: Renderer calls `window.api.*` (exposed via `src/preload/index.ts` contextBridge). Main process handles in `src/main/index.ts`. Channels: `read-json`, `write-json`, `send-notification`, `check-update`, `open-external`, `confirm-close`, `minimize-window`, `export-data`, `import-data`, `save-file`, `open-file`, `request-close` (main→renderer). Never add new IPC channels without updating all three files (main, preload, preload types).
 
 **Persistence**: `src/main/persistence.ts` — synchronous Node.js `fs` operations in `app.getPath('userData')`. Three JSON files: `settings.json`, `tasks.json`, `history.json`. Each Pinia store loads on mount and saves on every mutation. No debouncing needed — local file IO is fast.
 

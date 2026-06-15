@@ -35,15 +35,6 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   async function saveSettings(): Promise<void> {
-    // Always save to localStorage first
-    try {
-      localStorage.setItem('settings', JSON.stringify(settings.value))
-      console.log('[settings] localStorage saved')
-    } catch (err) {
-      console.error('[settings] localStorage save error:', err)
-    }
-
-    // Then save to filesystem via IPC
     try {
       await window.api.writeJSON('settings.json', JSON.parse(JSON.stringify(settings.value)))
       console.log('[settings] IPC saved')

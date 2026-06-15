@@ -57,6 +57,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  window.api.offRequestClose(handleCloseRequest)
   timer.cleanup()
 })
 </script>

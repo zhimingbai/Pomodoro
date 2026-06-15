@@ -92,11 +92,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('minimize', () => {
-    setTimeout(() => {
-      if (mainWindow) {
-        mainWindow.hide()
-      }
-    }, 0)
+    // Normal minimize behavior — hide to tray is available via tray context menu
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -252,8 +248,7 @@ app.whenReady().then(() => {
   // IPC: confirm window close
   ipcMain.handle('confirm-close', () => {
     forceClose = true
-    const win = BrowserWindow.getAllWindows()[0]
-    if (win) win.close()
+    if (mainWindow) mainWindow.close()
   })
 
   // IPC: open external URL

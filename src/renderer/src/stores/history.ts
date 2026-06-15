@@ -39,15 +39,6 @@ export const useHistoryStore = defineStore('history', () => {
   }
 
   async function saveHistory(): Promise<void> {
-    // Always save to localStorage first
-    try {
-      localStorage.setItem('history', JSON.stringify(sessions.value))
-      console.log('[history] localStorage saved:', sessions.value.length, 'sessions')
-    } catch (err) {
-      console.error('[history] localStorage save error:', err)
-    }
-
-    // Then save to filesystem via IPC
     try {
       await window.api.writeJSON('history.json', JSON.parse(JSON.stringify(sessions.value)))
       console.log('[history] IPC saved:', sessions.value.length, 'sessions')
