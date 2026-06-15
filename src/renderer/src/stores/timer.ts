@@ -60,6 +60,8 @@ export const useTimerStore = defineStore('timer', () => {
         return '短休'
       case 'longBreak':
         return '长休'
+      default:
+        return '专注时间'
     }
   })
 
@@ -215,6 +217,13 @@ export const useTimerStore = defineStore('timer', () => {
     activeTaskText.value = taskText
   }
 
+  function cleanup(): void {
+    if (timerHandle) {
+      clearInterval(timerHandle)
+      timerHandle = null
+    }
+  }
+
   return {
     phase,
     status,
@@ -236,6 +245,7 @@ export const useTimerStore = defineStore('timer', () => {
     skipPhase,
     completeSession,
     advancePhase,
-    setActiveTask
+    setActiveTask,
+    cleanup
   }
 })

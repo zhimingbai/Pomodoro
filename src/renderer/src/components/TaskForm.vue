@@ -37,7 +37,7 @@ function handleSubmit(): void {
         />
         <button type="submit" class="btn-add">添加</button>
       </div>
-      <p class="error" v-if="error">{{ error }}</p>
+      <p v-if="error" class="error">{{ error }}</p>
     </form>
   </div>
 </template>

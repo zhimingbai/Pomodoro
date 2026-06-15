@@ -22,13 +22,13 @@ function handleMainClick(): void {
       <span v-else>继续</span>
     </button>
     <div class="secondary-controls">
-      <button class="btn btn-secondary" @click="timer.resetTimer()" v-if="!timer.isIdle">
+      <button v-if="!timer.isIdle" class="btn btn-secondary" @click="timer.resetTimer()">
         重置
       </button>
-      <button class="btn btn-secondary" @click="timer.resetCycle()" v-if="!timer.isIdle">
+      <button v-if="!timer.isIdle" class="btn btn-secondary" @click="timer.resetCycle()">
         重置循环
       </button>
-      <button class="btn btn-secondary" @click="timer.skipPhase()" v-if="timer.isRunning">
+      <button v-if="timer.isRunning" class="btn btn-secondary" @click="timer.skipPhase()">
         跳过
       </button>
     </div>

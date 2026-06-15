@@ -5,7 +5,7 @@ const timer = useTimerStore()
 </script>
 
 <template>
-  <div class="active-task" v-if="timer.activeTaskText && timer.phase === 'focus'">
+  <div v-if="timer.activeTaskText && timer.phase === 'focus'" class="active-task">
     <span class="active-label">正在专注：</span>
     <span class="active-name">{{ timer.activeTaskText }}</span>
   </div>

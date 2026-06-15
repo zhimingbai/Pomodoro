@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useSettingsStore } from './stores/settings'
 import { useTaskStore } from './stores/tasks'
 import { useHistoryStore } from './stores/history'
@@ -54,6 +54,10 @@ onMounted(async () => {
       })
       .catch(() => {})
   }
+})
+
+onUnmounted(() => {
+  timer.cleanup()
 })
 </script>
 

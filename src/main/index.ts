@@ -1,4 +1,14 @@
-import { app, shell, BrowserWindow, ipcMain, Notification, Tray, Menu, nativeImage } from 'electron'
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  Notification,
+  Tray,
+  Menu,
+  nativeImage,
+  dialog
+} from 'electron'
 import { join } from 'path'
 import { writeFileSync, readFileSync, unlinkSync } from 'fs'
 import https from 'https'
@@ -254,6 +264,71 @@ app.whenReady().then(() => {
   // IPC: minimize window → hide to tray
   ipcMain.handle('minimize-window', () => {
     if (mainWindow) mainWindow.hide()
+  })
+
+  // IPC: export data
+  ipcMain.handle('export-data', () => {
+    const settings = readJSON('settings.json', {})
+    const tasks = readJSON('tasks.json', [])
+    const history = readJSON('history.json', [])
+    return { settings, tasks, history }
+  })
+
+  // IPC: import data
+  ipcMain.handle(
+    'import-data',
+    (_event, data: { settings: unknown; tasks: unknown; history: unknown }) => {
+      try {
+        if (data.settings) writeJSON('settings.json', data.settings)
+        if (data.tasks) writeJSON('tasks.json', data.tasks)
+        if (data.history) writeJSON('history.json', data.history)
+        return { success: true }
+      } catch (err) {
+        console.error('[import] error:', err)
+        return { success: false, error: String(err) }
+      }
+    }
+  )
+
+  // IPC: save file dialog
+  ipcMain.handle('save-file', async (_event, content: string, defaultName: string) => {
+    if (!mainWindow) return { success: false }
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: '导出数据',
+      defaultPath: defaultName,
+      filters: [{ name: 'JSON 文件', extensions: ['json'] }]
+    })
+    if (!result.canceled && result.filePath) {
+      try {
+        writeFileSync(result.filePath, content, 'utf-8')
+        return { success: true, filePath: result.filePath }
+      } catch (err) {
+        console.error('[save-file] error:', err)
+        return { success: false, error: String(err) }
+      }
+    }
+    return { success: false }
+  })
+
+  // IPC: open file dialog
+  ipcMain.handle('open-file', async () => {
+    if (!mainWindow) return { success: false }
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: '导入数据',
+      filters: [{ name: 'JSON 文件', extensions: ['json'] }],
+      properties: ['openFile']
+    })
+    if (!result.canceled && result.filePaths.length > 0) {
+      try {
+        const content = readFileSync(result.filePaths[0], 'utf-8')
+        const data = JSON.parse(content)
+        return { success: true, data }
+      } catch (err) {
+        console.error('[open-file] error:', err)
+        return { success: false, error: String(err) }
+      }
+    }
+    return { success: false }
   })
 
   createWindow()

@@ -11,7 +11,13 @@ const api = {
   onRequestClose: (callback: () => void) => {
     ipcRenderer.on('request-close', callback)
   },
-  confirmClose: () => ipcRenderer.invoke('confirm-close')
+  confirmClose: () => ipcRenderer.invoke('confirm-close'),
+  exportData: () => ipcRenderer.invoke('export-data'),
+  importData: (data: { settings: unknown; tasks: unknown; history: unknown }) =>
+    ipcRenderer.invoke('import-data', data),
+  saveFile: (content: string, defaultName: string) =>
+    ipcRenderer.invoke('save-file', content, defaultName),
+  openFile: () => ipcRenderer.invoke('open-file')
 }
 
 if (process.contextIsolated) {

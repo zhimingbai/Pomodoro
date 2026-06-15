@@ -14,6 +14,8 @@ const historyStore = useHistoryStore()
 
 const showResetConfirm = ref(false)
 const showClearConfirm = ref(false)
+const exportStatus = ref<'idle' | 'exporting' | 'success' | 'error'>('idle')
+const importStatus = ref<'idle' | 'importing' | 'success' | 'error'>('idle')
 
 // 更新检测状态
 const updateInfo = ref<UpdateInfo>({
@@ -115,6 +117,48 @@ function clearAllData(): void {
   timer.setActiveTask(null, null)
   showClearConfirm.value = false
 }
+
+async function exportData(): Promise<void> {
+  exportStatus.value = 'exporting'
+  try {
+    const data = await window.api.exportData()
+    const content = JSON.stringify(data, null, 2)
+    const result = await window.api.saveFile(content, 'pomodoro-backup.json')
+    exportStatus.value = result.success ? 'success' : 'error'
+  } catch {
+    exportStatus.value = 'error'
+  }
+  setTimeout(() => {
+    exportStatus.value = 'idle'
+  }, 2000)
+}
+
+async function importData(): Promise<void> {
+  importStatus.value = 'importing'
+  try {
+    const result = await window.api.openFile()
+    if (result.success && result.data) {
+      const data = result.data as { settings: unknown; tasks: unknown; history: unknown }
+      const importResult = await window.api.importData(data)
+      if (importResult.success) {
+        importStatus.value = 'success'
+        // 重新加载数据
+        await settings.loadSettings()
+        await taskStore.loadTasks()
+        await historyStore.loadHistory()
+      } else {
+        importStatus.value = 'error'
+      }
+    } else {
+      importStatus.value = 'idle'
+    }
+  } catch {
+    importStatus.value = 'error'
+  }
+  setTimeout(() => {
+    importStatus.value = 'idle'
+  }, 2000)
+}
 </script>
 
 <template>
@@ -185,6 +229,44 @@ function clearAllData(): void {
       <div class="data-actions">
         <div class="data-row">
           <div class="data-info">
+            <span class="data-label">导出数据</span>
+            <span class="data-desc">备份所有设置、任务和历史记录</span>
+          </div>
+          <button
+            class="btn-action"
+            :disabled="locked || exportStatus === 'exporting'"
+            @click="exportData"
+          >
+            {{
+              exportStatus === 'exporting'
+                ? '导出中...'
+                : exportStatus === 'success'
+                  ? '已导出'
+                  : '导出'
+            }}
+          </button>
+        </div>
+        <div class="data-row">
+          <div class="data-info">
+            <span class="data-label">导入数据</span>
+            <span class="data-desc">从备份文件恢复数据（将覆盖当前数据）</span>
+          </div>
+          <button
+            class="btn-action"
+            :disabled="locked || importStatus === 'importing'"
+            @click="importData"
+          >
+            {{
+              importStatus === 'importing'
+                ? '导入中...'
+                : importStatus === 'success'
+                  ? '已导入'
+                  : '导入'
+            }}
+          </button>
+        </div>
+        <div class="data-row">
+          <div class="data-info">
             <span class="data-label">恢复默认设置</span>
             <span class="data-desc">将所有计时参数恢复为默认值</span>
           </div>
@@ -225,9 +307,6 @@ function clearAllData(): void {
           class="update-result has-update"
         >
           <p class="update-result-title">发现新版本 v{{ updateInfo.latestVersion }}</p>
-          <p v-if="updateInfo.releaseNotes" class="update-result-desc">
-            {{ updateInfo.releaseNotes }}
-          </p>
           <button class="btn-update" @click="openUpdateUrl">前往下载</button>
         </div>
         <div v-else-if="updateStatus === 'checked'" class="update-result up-to-date">
@@ -545,16 +624,9 @@ function clearAllData(): void {
   color: #339af0;
 }
 .update-result-title {
-  margin: 0 0 4px;
+  margin: 0 0 8px;
   font-weight: 600;
   font-size: 13px;
-}
-.update-result-desc {
-  margin: 0 0 8px;
-  font-size: 11px;
-  opacity: 0.6;
-  max-height: 60px;
-  overflow: hidden;
 }
 .btn-update {
   padding: 5px 18px;

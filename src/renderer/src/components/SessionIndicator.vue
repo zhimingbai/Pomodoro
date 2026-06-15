@@ -23,7 +23,7 @@ const dots = computed(() => {
 </script>
 
 <template>
-  <div class="session-indicator" v-if="timer.phase !== 'longBreak'">
+  <div v-if="timer.phase !== 'longBreak'" class="session-indicator">
     <div class="dots">
       <span v-for="(dot, i) in dots" :key="i" class="dot" :class="dot"></span>
     </div>

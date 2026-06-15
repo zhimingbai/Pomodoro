@@ -47,29 +47,29 @@ function handleSetActive(id: string, text: string): void {
       <p>暂无任务，在上方添加一个吧。</p>
     </div>
 
-    <div class="tasks-section" v-if="taskStore.activeTasks.length">
+    <div v-if="taskStore.activeTasks.length" class="tasks-section">
       <div class="section-title">待完成 ({{ taskStore.activeTasks.length }})</div>
       <TaskItem
         v-for="task in taskStore.activeTasks"
         :key="task.id"
         :task="task"
-        :isActive="task.id === timer.activeTaskId"
+        :is-active="task.id === timer.activeTaskId"
         @toggle="handleToggle"
         @delete="handleDelete"
-        @setActive="handleSetActive"
+        @set-active="handleSetActive"
       />
     </div>
 
-    <div class="tasks-section" v-if="taskStore.completedTasks.length">
+    <div v-if="taskStore.completedTasks.length" class="tasks-section">
       <div class="section-title">已完成 ({{ taskStore.completedTasks.length }})</div>
       <TaskItem
         v-for="task in taskStore.completedTasks"
         :key="task.id"
         :task="task"
-        :isActive="false"
+        :is-active="false"
         @toggle="handleToggle"
         @delete="handleDelete"
-        @setActive="handleSetActive"
+        @set-active="handleSetActive"
       />
     </div>
   </div>

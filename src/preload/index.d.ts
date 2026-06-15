@@ -12,6 +12,17 @@ declare global {
       minimizeWindow: () => Promise<void>
       onRequestClose: (callback: () => void) => void
       confirmClose: () => Promise<void>
+      exportData: () => Promise<{ settings: unknown; tasks: unknown; history: unknown }>
+      importData: (data: {
+        settings: unknown
+        tasks: unknown
+        history: unknown
+      }) => Promise<{ success: boolean; error?: string }>
+      saveFile: (
+        content: string,
+        defaultName: string
+      ) => Promise<{ success: boolean; filePath?: string; error?: string }>
+      openFile: () => Promise<{ success: boolean; data?: unknown; error?: string }>
     }
   }
 }

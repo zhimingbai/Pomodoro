@@ -18,7 +18,7 @@ export function readJSON<T>(filename: string, fallback: T): T {
     const content = readFileSync(filePath, 'utf-8')
     console.log('[persist] read OK:', filePath, `(${content.length} bytes)`)
     return JSON.parse(content) as T
-  } catch (err) {
+  } catch {
     console.log('[persist] read MISS:', filePath)
     return fallback
   }
