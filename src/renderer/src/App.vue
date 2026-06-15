@@ -44,6 +44,7 @@ onMounted(async () => {
     taskStore.loadTasks(),
     historyStore.loadHistory()
   ])
+  await timer.restoreState()
   if (settingsStore.settings.autoCheckUpdate) {
     window.api
       .checkUpdate()

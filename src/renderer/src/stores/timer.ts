@@ -6,6 +6,17 @@ import { useHistoryStore } from './history'
 import { formatTime } from '../utils/format'
 import { formatLocalDateKey } from '../utils/date'
 
+interface TimerState {
+  phase: TimerPhase
+  status: TimerStatus
+  endTimestamp: number | null
+  pausedRemaining: number | null
+  sessionsCompletedInCycle: number
+  activeTaskId: string | null
+  activeTaskText: string | null
+  sessionStartTimestamp: number | null
+}
+
 export const useTimerStore = defineStore('timer', () => {
   const phase = ref<TimerPhase>('focus')
   const status = ref<TimerStatus>('idle')
@@ -93,6 +104,7 @@ export const useTimerStore = defineStore('timer', () => {
     status.value = 'running'
     if (timerHandle) clearInterval(timerHandle)
     timerHandle = setInterval(tick, 200)
+    saveState()
   }
 
   function pauseTimer(): void {
@@ -104,6 +116,7 @@ export const useTimerStore = defineStore('timer', () => {
     }
     status.value = 'paused'
     endTimestamp.value = null
+    saveState()
   }
 
   function resetTimer(): void {
@@ -115,6 +128,7 @@ export const useTimerStore = defineStore('timer', () => {
     endTimestamp.value = null
     pausedRemaining.value = null
     remainingSeconds.value = phaseDurationSeconds.value
+    saveState()
   }
 
   function resetCycle(): void {
@@ -130,6 +144,7 @@ export const useTimerStore = defineStore('timer', () => {
     activeTaskId.value = null
     activeTaskText.value = null
     remainingSeconds.value = phaseDurationSeconds.value
+    saveState()
   }
 
   function skipPhase(): void {
@@ -147,6 +162,7 @@ export const useTimerStore = defineStore('timer', () => {
     pausedRemaining.value = null
     advancePhase()
     remainingSeconds.value = phaseDurationSeconds.value
+    saveState()
   }
 
   function advancePhase(): void {
@@ -209,12 +225,100 @@ export const useTimerStore = defineStore('timer', () => {
       (phase.value === 'focus' && s.autoStartFocus) || (phase.value !== 'focus' && s.autoStartBreak)
     if (shouldAutoStart) {
       startTimer()
+    } else {
+      saveState()
     }
   }
 
   function setActiveTask(taskId: string | null, taskText: string | null): void {
     activeTaskId.value = taskId
     activeTaskText.value = taskText
+    saveState()
+  }
+
+  function saveState(): void {
+    const state: TimerState = {
+      phase: phase.value,
+      status: status.value,
+      endTimestamp: endTimestamp.value,
+      pausedRemaining: pausedRemaining.value,
+      sessionsCompletedInCycle: sessionsCompletedInCycle.value,
+      activeTaskId: activeTaskId.value,
+      activeTaskText: activeTaskText.value,
+      sessionStartTimestamp
+    }
+    window.api.writeJSON('timer-state.json', state).catch(() => {})
+  }
+
+  async function restoreState(): Promise<void> {
+    let state: TimerState | null = null
+    try {
+      state = (await window.api.readJSON('timer-state.json')) as TimerState | null
+    } catch {
+      return
+    }
+    if (!state) return
+
+    phase.value = state.phase
+    sessionsCompletedInCycle.value = state.sessionsCompletedInCycle
+    activeTaskId.value = state.activeTaskId
+    activeTaskText.value = state.activeTaskText
+    sessionStartTimestamp = state.sessionStartTimestamp
+
+    if (state.status === 'running' && state.endTimestamp !== null) {
+      const remaining = Math.max(0, Math.round((state.endTimestamp - Date.now()) / 1000))
+      if (remaining <= 0) {
+        // Timer completed while app was closed — record to history
+        sessionStartTimestamp = state.sessionStartTimestamp
+        const historyStore = useHistoryStore()
+        historyStore.addSession({
+          id: crypto.randomUUID(),
+          date: formatLocalDateKey(new Date()),
+          phase: state.phase,
+          startTime: new Date(state.sessionStartTimestamp ?? Date.now()).toISOString(),
+          endTime: new Date().toISOString(),
+          durationSeconds: settingsStore.getPhaseDurationSeconds(state.phase),
+          taskId: state.activeTaskId,
+          taskText: state.activeTaskText
+        })
+        // Advance to next phase
+        const savedCycle = state.sessionsCompletedInCycle
+        if (state.phase === 'focus') {
+          sessionsCompletedInCycle.value = savedCycle + 1
+          if (sessionsCompletedInCycle.value >= settingsStore.settings.longBreakInterval) {
+            phase.value = 'longBreak'
+            sessionsCompletedInCycle.value = 0
+          } else {
+            phase.value = 'shortBreak'
+          }
+          activeTaskId.value = null
+          activeTaskText.value = null
+        } else {
+          phase.value = 'focus'
+        }
+        status.value = 'idle'
+        endTimestamp.value = null
+        pausedRemaining.value = null
+        remainingSeconds.value = phaseDurationSeconds.value
+        window.api.sendNotification('补记完成', '上次计时已完成，已记录到历史')
+      } else {
+        // Timer still running — resume
+        endTimestamp.value = state.endTimestamp
+        remainingSeconds.value = remaining
+        status.value = 'running'
+        timerHandle = setInterval(tick, 200)
+      }
+    } else if (state.status === 'paused' && state.pausedRemaining !== null) {
+      status.value = 'paused'
+      pausedRemaining.value = state.pausedRemaining
+      remainingSeconds.value = state.pausedRemaining
+      endTimestamp.value = null
+    } else {
+      status.value = 'idle'
+      endTimestamp.value = null
+      pausedRemaining.value = null
+      remainingSeconds.value = phaseDurationSeconds.value
+    }
   }
 
   function cleanup(): void {
@@ -246,6 +350,7 @@ export const useTimerStore = defineStore('timer', () => {
     completeSession,
     advancePhase,
     setActiveTask,
-    cleanup
+    cleanup,
+    restoreState
   }
 })
